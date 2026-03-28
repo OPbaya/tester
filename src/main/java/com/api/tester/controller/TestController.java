@@ -1,8 +1,10 @@
 package com.api.tester.controller;
 
 import com.api.tester.model.ApiResponse;
+import com.api.tester.model.TestResult;
 import com.api.tester.service.ApiTestService;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.*;
@@ -21,5 +23,15 @@ public class TestController {
     public ApiResponse testGetApi(@RequestBody Map<String, String> request) {
         String url = request.get("url");
         return apiTestService.testGetApi(url);
+    }
+
+    // @GetMapping("/test-multiple")
+    // public List<ApiResponse> testMultiple(@RequestParam String url) {
+    //     return apiTestService.runMultipleTests(url);
+    // }
+    
+    @GetMapping("/analyze")
+    public List<TestResult> testMultiple(@RequestParam String url) {
+        return apiTestService.runMultipleTests(url);
     }
 }
