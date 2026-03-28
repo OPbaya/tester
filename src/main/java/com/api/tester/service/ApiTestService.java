@@ -3,10 +3,13 @@ package com.api.tester.service;
 import java.util.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.api.tester.model.AnalysisReport;
 import com.api.tester.model.ApiResponse;
+import com.api.tester.model.TestResult;
+
 import org.springframework.http.ResponseEntity;
 
-import com.api.tester.model.TestResult;
 
 @Service
 public class ApiTestService {
@@ -51,6 +54,7 @@ public class ApiTestService {
         }
     }
     // Method to run multiple test cases
+
     public List<TestResult> runMultipleTests(String url) {
 
         List<TestResult> results = new ArrayList<>();
@@ -93,6 +97,7 @@ public class ApiTestService {
 
         return results;
     }
+    
     // Method to analyze issues based on status and error message
     private String analyzeIssue(int status, String error) {
 
@@ -114,4 +119,45 @@ public class ApiTestService {
 
         return "Unknown issue";
     }
+
+
+    // Method to detect patterns and summarize results
+    private String detectSummary(List<TestResult> results) {
+
+        int failures = 0;
+        long totalTime = 0;
+
+        for (TestResult r : results) {
+            if (!r.isSuccess()) {
+                failures++;
+            }
+            totalTime += r.getResponseTime();
+        }
+
+        long avgTime = totalTime / results.size();
+
+        // Pattern 1: Too many failures
+        if (failures >= 2) {
+            return "API is unstable - multiple test cases failed";
+        }
+
+        // Pattern 2: Slow API
+        if (avgTime > 1000) {
+            return "API is slow - high average response time";
+        }
+
+        return "API is stable";
+    }
+    
+    // Main method to run full analysis
+    public AnalysisReport analyzeFullApi(String url) {
+
+    List<TestResult> results = runMultipleTests(url);
+
+    String summary = detectSummary(results);
+
+    String overallStatus = summary.contains("API is stable") ? "GOOD" : "ISSUE";
+
+    return new AnalysisReport(results, overallStatus, summary);
+}
 }
