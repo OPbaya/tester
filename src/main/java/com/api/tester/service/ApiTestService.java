@@ -10,7 +10,6 @@ import com.api.tester.model.TestResult;
 
 import org.springframework.http.ResponseEntity;
 
-
 @Service
 public class ApiTestService {
 
@@ -97,7 +96,7 @@ public class ApiTestService {
 
         return results;
     }
-    
+
     // Method to analyze issues based on status and error message
     private String analyzeIssue(int status, String error) {
 
@@ -119,7 +118,6 @@ public class ApiTestService {
 
         return "Unknown issue";
     }
-
 
     // Method to detect patterns and summarize results
     private String detectSummary(List<TestResult> results) {
@@ -148,16 +146,45 @@ public class ApiTestService {
 
         return "API is stable";
     }
-    
+
     // Main method to run full analysis
     public AnalysisReport analyzeFullApi(String url) {
 
-    List<TestResult> results = runMultipleTests(url);
+        List<TestResult> results = runMultipleTests(url);
 
-    String summary = detectSummary(results);
+        String summary = detectSummary(results);
 
-    String overallStatus = summary.contains("API is stable") ? "GOOD" : "ISSUE";
+        String overallStatus = summary.contains("API is stable") ? "GOOD" : "ISSUE";
 
-    return new AnalysisReport(results, overallStatus, summary);
-}
+        List<String> suggestions = generateSuggestions(results);
+
+        return new AnalysisReport(results, overallStatus, summary, suggestions);
+    }
+
+    // Method to generate suggestions based on test results
+    private List<String> generateSuggestions(List<TestResult> results) {
+
+        List<String> suggestions = new ArrayList<>();
+
+        for (TestResult r : results) {
+
+            // Case 1: Server error
+            if (r.getStatus() == 500) {
+                suggestions.add("Improve error handling to prevent server crashes");
+            }
+
+            // Case 2: Not found
+            if (r.getStatus() == 404) {
+                suggestions.add("Check API endpoint URL and routing configuration");
+            }
+
+            // Case 3: Slow response
+            if (r.getResponseTime() > 1000) {
+                suggestions.add("Optimize API performance or add caching");
+            }
+        }
+
+        // Remove duplicates
+        return suggestions.stream().distinct().toList();
+    }
 }
