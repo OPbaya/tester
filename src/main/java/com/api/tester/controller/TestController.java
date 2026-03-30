@@ -1,6 +1,7 @@
 package com.api.tester.controller;
 
 import com.api.tester.model.AnalysisReport;
+import com.api.tester.model.ApiRequest;
 import com.api.tester.model.ApiResponse;
 import com.api.tester.model.TestResult;
 import com.api.tester.service.ApiTestService;
@@ -33,16 +34,20 @@ public class TestController {
 
     // GET
     // http://localhost:8080/api/analyze?url=https://jsonplaceholder.typicode.com/posts
-    @GetMapping("/analyze")
-    public List<TestResult> testMultiple(@RequestParam String url) {
-        return apiTestService.runMultipleTests(url);
-    }
-
+    // @GetMapping("/analyze")
+    // public List<TestResult> testMultiple(@RequestParam String url) {
+    //     return apiTestService.runMultipleTests(url);
+    // }
 
     // GET
     // http://localhost:8080/api/full-analysis?url=https://jsonplaceholder.typicode.com/posts
-    @GetMapping("/full-analysis")
-    public AnalysisReport fullAnalysis(@RequestParam String url) {
-        return apiTestService.analyzeFullApi(url);
+    // @GetMapping("/full-analysis")
+    // public AnalysisReport fullAnalysis(@RequestParam String url) {
+    // return apiTestService.analyzeFullApi(url);
+    // }
+
+    @PostMapping("/full-analysis")
+    public AnalysisReport fullAnalysis(@RequestBody ApiRequest request) {
+        return apiTestService.analyzeFullApi(request);
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.api.tester.model.AnalysisReport;
+import com.api.tester.model.ApiRequest;
 import com.api.tester.model.ApiResponse;
 import com.api.tester.model.TestResult;
 
@@ -54,48 +55,100 @@ public class ApiTestService {
     }
     // Method to run multiple test cases
 
-    public List<TestResult> runMultipleTests(String url) {
+    // public List<TestResult> runMultipleTests(String url) {
 
-        List<TestResult> results = new ArrayList<>();
+    //     List<TestResult> results = new ArrayList<>();
 
-        // 1. Normal Request
-        ApiResponse normal = testGetApi(url);
-        results.add(new TestResult(
-                "Normal Request",
-                normal.getStatus(),
-                normal.isSuccess(),
-                analyzeIssue(normal.getStatus(), normal.getError()),
-                normal.getError(),
-                normal.getResponseTime()));
+    //     // 1. Normal Request
+    //     ApiResponse normal = testGetApi(url);
+    //     results.add(new TestResult(
+    //             "Normal Request",
+    //             normal.getStatus(),
+    //             normal.isSuccess(),
+    //             analyzeIssue(normal.getStatus(), normal.getError()),
+    //             normal.getError(),
+    //             normal.getResponseTime()));
 
-        // 2. Invalid URL
+    //     // 2. Invalid URL
+    //     ApiResponse invalid = testGetApi(url + "/invalid");
+    //     results.add(new TestResult(
+    //             "Invalid URL",
+    //             invalid.getStatus(),
+    //             invalid.isSuccess(),
+    //             analyzeIssue(invalid.getStatus(), invalid.getError()),
+    //             invalid.getError(),
+    //             invalid.getResponseTime()));
+
+    //     // 3. Empty URL
+    //     ApiResponse empty;
+    //     try {
+    //         empty = testGetApi("");
+    //     } catch (Exception e) {
+    //         empty = new ApiResponse(500, 0, false, "Empty URL");
+    //     }
+
+    //     results.add(new TestResult(
+    //             "Empty URL",
+    //             empty.getStatus(),
+    //             empty.isSuccess(),
+    //             analyzeIssue(empty.getStatus(), empty.getError()),
+    //             empty.getError(),
+    //             empty.getResponseTime()));
+
+    //     return results;
+    // }
+
+
+    private List<TestResult> generateTests(ApiRequest request) {
+
+    List<TestResult> results = new ArrayList<>();
+
+    String url = request.getUrl();
+    String method = request.getMethod();
+
+    // Always run normal test
+    ApiResponse normal = testGetApi(url);
+    results.add(new TestResult(
+            "Normal Request",
+            normal.getStatus(),
+            normal.isSuccess(),
+            analyzeIssue(normal.getStatus(), normal.getError()),
+            normal.getError(),
+            normal.getResponseTime()
+    ));
+
+    // Dynamic logic based on method
+    if ("GET".equalsIgnoreCase(method)) {
+
         ApiResponse invalid = testGetApi(url + "/invalid");
+
         results.add(new TestResult(
-                "Invalid URL",
+                "Invalid Endpoint Test",
                 invalid.getStatus(),
                 invalid.isSuccess(),
                 analyzeIssue(invalid.getStatus(), invalid.getError()),
                 invalid.getError(),
-                invalid.getResponseTime()));
+                invalid.getResponseTime()
+        ));
+    }
 
-        // 3. Empty URL
-        ApiResponse empty;
-        try {
-            empty = testGetApi("");
-        } catch (Exception e) {
-            empty = new ApiResponse(500, 0, false, "Empty URL");
-        }
+    if ("POST".equalsIgnoreCase(method)) {
+
+        ApiResponse empty = testGetApi(""); // simulate bad input
 
         results.add(new TestResult(
-                "Empty URL",
+                "Empty Input Test",
                 empty.getStatus(),
                 empty.isSuccess(),
                 analyzeIssue(empty.getStatus(), empty.getError()),
                 empty.getError(),
-                empty.getResponseTime()));
-
-        return results;
+                empty.getResponseTime()
+        ));
     }
+
+    return results;
+}
+
 
     // Method to analyze issues based on status and error message
     private String analyzeIssue(int status, String error) {
@@ -148,9 +201,10 @@ public class ApiTestService {
     }
 
     // Main method to run full analysis
-    public AnalysisReport analyzeFullApi(String url) {
+    
+    public AnalysisReport analyzeFullApi(ApiRequest request) {
 
-        List<TestResult> results = runMultipleTests(url);
+        List<TestResult> results = generateTests(request);
 
         String summary = detectSummary(results);
 

@@ -9,13 +9,17 @@ public class TestResult {
     private String err;
     private long responseTime;
     
-    public TestResult(String testName, int status, boolean success, String issue,String error, long responseTime) {
+    public TestResult(String testName, int status, boolean success, String issue, String error, long responseTime) {
         this.testName = testName;
         this.status = status;
         this.success = success;
         this.issue = issue;
         this.err= error;
         this.responseTime = responseTime;
+    }
+
+    public TestResult(Object testName2, int status2, boolean success2, String analyzeIssue, String error, long responseTime2) {
+        //TODO Auto-generated constructor stub
     }
 
     public String getTestName() {
