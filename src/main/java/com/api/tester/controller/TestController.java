@@ -46,6 +46,11 @@ public class TestController {
     // return apiTestService.analyzeFullApi(url);
     // }
 
+    // @PostMapping("/full-analysis")
+    // public AnalysisReport fullAnalysis(@RequestBody ApiRequest request) {
+    //     return apiTestService.analyzeFullApi(request);
+    // }
+    
     @PostMapping("/full-analysis")
     public AnalysisReport fullAnalysis(@RequestBody ApiRequest request) {
         return apiTestService.analyzeFullApi(request);

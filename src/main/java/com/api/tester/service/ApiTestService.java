@@ -10,6 +10,12 @@ import com.api.tester.model.ApiResponse;
 import com.api.tester.model.TestResult;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
+import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
+import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
+
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
 @Service
 public class ApiTestService {
@@ -57,98 +63,156 @@ public class ApiTestService {
 
     // public List<TestResult> runMultipleTests(String url) {
 
-    //     List<TestResult> results = new ArrayList<>();
+    // List<TestResult> results = new ArrayList<>();
 
-    //     // 1. Normal Request
-    //     ApiResponse normal = testGetApi(url);
-    //     results.add(new TestResult(
-    //             "Normal Request",
-    //             normal.getStatus(),
-    //             normal.isSuccess(),
-    //             analyzeIssue(normal.getStatus(), normal.getError()),
-    //             normal.getError(),
-    //             normal.getResponseTime()));
+    // // 1. Normal Request
+    // ApiResponse normal = testGetApi(url);
+    // results.add(new TestResult(
+    // "Normal Request",
+    // normal.getStatus(),
+    // normal.isSuccess(),
+    // analyzeIssue(normal.getStatus(), normal.getError()),
+    // normal.getError(),
+    // normal.getResponseTime()));
 
-    //     // 2. Invalid URL
-    //     ApiResponse invalid = testGetApi(url + "/invalid");
-    //     results.add(new TestResult(
-    //             "Invalid URL",
-    //             invalid.getStatus(),
-    //             invalid.isSuccess(),
-    //             analyzeIssue(invalid.getStatus(), invalid.getError()),
-    //             invalid.getError(),
-    //             invalid.getResponseTime()));
+    // // 2. Invalid URL
+    // ApiResponse invalid = testGetApi(url + "/invalid");
+    // results.add(new TestResult(
+    // "Invalid URL",
+    // invalid.getStatus(),
+    // invalid.isSuccess(),
+    // analyzeIssue(invalid.getStatus(), invalid.getError()),
+    // invalid.getError(),
+    // invalid.getResponseTime()));
 
-    //     // 3. Empty URL
-    //     ApiResponse empty;
-    //     try {
-    //         empty = testGetApi("");
-    //     } catch (Exception e) {
-    //         empty = new ApiResponse(500, 0, false, "Empty URL");
-    //     }
-
-    //     results.add(new TestResult(
-    //             "Empty URL",
-    //             empty.getStatus(),
-    //             empty.isSuccess(),
-    //             analyzeIssue(empty.getStatus(), empty.getError()),
-    //             empty.getError(),
-    //             empty.getResponseTime()));
-
-    //     return results;
+    // // 3. Empty URL
+    // ApiResponse empty;
+    // try {
+    // empty = testGetApi("");
+    // } catch (Exception e) {
+    // empty = new ApiResponse(500, 0, false, "Empty URL");
     // }
 
+    // results.add(new TestResult(
+    // "Empty URL",
+    // empty.getStatus(),
+    // empty.isSuccess(),
+    // analyzeIssue(empty.getStatus(), empty.getError()),
+    // empty.getError(),
+    // empty.getResponseTime()));
 
+    // return results;
+    // }
+
+    // Method to generate test cases dynamically based on API method
     private List<TestResult> generateTests(ApiRequest request) {
 
-    List<TestResult> results = new ArrayList<>();
+        List<TestResult> results = new ArrayList<>();
 
-    String url = request.getUrl();
-    String method = request.getMethod();
+        String url = request.getUrl();
+        String method = request.getMethod();
 
-    // Always run normal test
-    ApiResponse normal = testGetApi(url);
-    results.add(new TestResult(
-            "Normal Request",
-            normal.getStatus(),
-            normal.isSuccess(),
-            analyzeIssue(normal.getStatus(), normal.getError()),
-            normal.getError(),
-            normal.getResponseTime()
-    ));
-
-    // Dynamic logic based on method
-    if ("GET".equalsIgnoreCase(method)) {
-
-        ApiResponse invalid = testGetApi(url + "/invalid");
-
+        // Always run normal test
+        ApiResponse normal = sendRequest(request);
         results.add(new TestResult(
-                "Invalid Endpoint Test",
-                invalid.getStatus(),
-                invalid.isSuccess(),
-                analyzeIssue(invalid.getStatus(), invalid.getError()),
-                invalid.getError(),
-                invalid.getResponseTime()
-        ));
+                "Normal Request",
+                normal.getStatus(),
+                normal.isSuccess(),
+                analyzeIssue(normal.getStatus(), normal.getError()),
+                normal.getError(),
+                normal.getResponseTime()));
+
+        // Dynamic logic based on method
+        if ("GET".equalsIgnoreCase(method)) {
+
+            ApiResponse invalid = testGetApi(url + "/invalid");
+
+            results.add(new TestResult(
+                    "Invalid Endpoint Test",
+                    invalid.getStatus(),
+                    invalid.isSuccess(),
+                    analyzeIssue(invalid.getStatus(), invalid.getError()),
+                    invalid.getError(),
+                    invalid.getResponseTime()));
+        }
+
+        if ("POST".equalsIgnoreCase(method)) {
+
+            ApiRequest emptyBodyRequest = new ApiRequest(url, method, request.getHeaders(), null);
+            
+            ApiResponse empty = sendRequest(emptyBodyRequest); // simulate bad input
+
+            results.add(new TestResult(
+                    "Empty Input Test",
+                    empty.getStatus(),
+                    empty.isSuccess(),
+                    analyzeIssue(empty.getStatus(), empty.getError()),
+                    empty.getError(),
+                    empty.getResponseTime()));
+        }
+
+        return results;
     }
 
-    if ("POST".equalsIgnoreCase(method)) {
+    // Method to send request based on ApiRequest object (supports GET/POST/PUT/DELETE) #7
+    public ApiResponse sendRequest(ApiRequest request) {
 
-        ApiResponse empty = testGetApi(""); // simulate bad input
+        long startTime = System.currentTimeMillis();
 
-        results.add(new TestResult(
-                "Empty Input Test",
-                empty.getStatus(),
-                empty.isSuccess(),
-                analyzeIssue(empty.getStatus(), empty.getError()),
-                empty.getError(),
-                empty.getResponseTime()
-        ));
+        try {
+            String method = request.getMethod().toUpperCase();
+            boolean hasBody = request.getBody() != null
+                    && ("POST".equals(method) || "PUT".equals(method));
+
+            WebClient.RequestHeadersSpec<?> headersSpec;
+
+            // Add body (only for POST/PUT)
+            if (hasBody) {
+                headersSpec = webClient
+                        .method(HttpMethod.valueOf(method))
+                        .uri(request.getUrl())
+                        .headers(h -> {
+                            if (request.getHeaders() != null) {
+                                h.setAll(request.getHeaders());
+                            }
+                        })
+                        .bodyValue(request.getBody());
+                    }
+                    else {
+                        // FIX 3: GET and DELETE must NOT call bodyValue()
+                        headersSpec = webClient
+                                .method(HttpMethod.valueOf(method))
+                                .uri(request.getUrl())
+                                .headers(h -> {
+                                    if (request.getHeaders() != null) {
+                                        h.setAll(request.getHeaders());
+                                    }
+                                });
+                    }
+            // Send request and get response
+             ResponseEntity<String> response = headersSpec
+                    .exchangeToMono(res -> res.toEntity(String.class))
+                    .block();
+
+            long endTime = System.currentTimeMillis();
+
+            return new ApiResponse(
+                    response.getStatusCode().value(),
+                    (endTime - startTime),
+                    true,
+                    null);
+
+        } catch (Exception e) {
+
+            long endTime = System.currentTimeMillis();
+
+            return new ApiResponse(
+                    500,
+                    (endTime - startTime),
+                    false,
+                    e.getMessage());
+        }
     }
-
-    return results;
-}
-
 
     // Method to analyze issues based on status and error message
     private String analyzeIssue(int status, String error) {
@@ -157,8 +221,24 @@ public class ApiTestService {
             return "No issue";
         }
 
+        if (status == 0) {
+            return "No response received - server may be down or URL is unreachable";
+        }
+
+        if (status == 401) {
+            return "Unauthorized - missing or invalid authentication credentials";
+        }
+
+        if (status == 403) {
+            return "Forbidden - client lacks permission to access this resource";
+        }
+
         if (status == 404) {
             return "Endpoint not found";
+        }
+
+        if (status == 429) {
+            return "Too many requests - API rate limit exceeded";
         }
 
         if (status == 500) {
@@ -201,7 +281,7 @@ public class ApiTestService {
     }
 
     // Main method to run full analysis
-    
+
     public AnalysisReport analyzeFullApi(ApiRequest request) {
 
         List<TestResult> results = generateTests(request);
