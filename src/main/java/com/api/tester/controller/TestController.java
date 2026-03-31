@@ -1,5 +1,6 @@
 package com.api.tester.controller;
 
+// import com.api.tester.config.CorsConfig;
 import com.api.tester.model.AnalysisReport;
 import com.api.tester.model.ApiRequest;
 import com.api.tester.model.ApiResponse;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 import org.springframework.web.bind.annotation.*;
 
+// @CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api")
 public class TestController {
