@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
 import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
-
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
@@ -49,11 +49,15 @@ public class ApiTestService {
                     null);
 
         } catch (Exception e) {
-
             long endTime = System.currentTimeMillis();
 
+            int status = 500;
+            if (e instanceof WebClientResponseException wcre) {
+                status = wcre.getStatusCode().value(); // extracts the real 404, 403, 401 etc.
+            }
+
             return new ApiResponse(
-                    500,
+                    status,
                     (endTime - startTime),
                     false,
                     e.getMessage());
@@ -139,7 +143,7 @@ public class ApiTestService {
         if ("POST".equalsIgnoreCase(method)) {
 
             ApiRequest emptyBodyRequest = new ApiRequest(url, method, request.getHeaders(), null);
-            
+
             ApiResponse empty = sendRequest(emptyBodyRequest); // simulate bad input
 
             results.add(new TestResult(
@@ -154,7 +158,8 @@ public class ApiTestService {
         return results;
     }
 
-    // Method to send request based on ApiRequest object (supports GET/POST/PUT/DELETE) #7
+    // Method to send request based on ApiRequest object (supports
+    // GET/POST/PUT/DELETE) #7
     public ApiResponse sendRequest(ApiRequest request) {
 
         long startTime = System.currentTimeMillis();
@@ -177,20 +182,19 @@ public class ApiTestService {
                             }
                         })
                         .bodyValue(request.getBody());
-                    }
-                    else {
-                        // FIX 3: GET and DELETE must NOT call bodyValue()
-                        headersSpec = webClient
-                                .method(HttpMethod.valueOf(method))
-                                .uri(request.getUrl())
-                                .headers(h -> {
-                                    if (request.getHeaders() != null) {
-                                        h.setAll(request.getHeaders());
-                                    }
-                                });
-                    }
+            } else {
+                // FIX 3: GET and DELETE must NOT call bodyValue()
+                headersSpec = webClient
+                        .method(HttpMethod.valueOf(method))
+                        .uri(request.getUrl())
+                        .headers(h -> {
+                            if (request.getHeaders() != null) {
+                                h.setAll(request.getHeaders());
+                            }
+                        });
+            }
             // Send request and get response
-             ResponseEntity<String> response = headersSpec
+            ResponseEntity<String> response = headersSpec
                     .exchangeToMono(res -> res.toEntity(String.class))
                     .block();
 
@@ -203,11 +207,15 @@ public class ApiTestService {
                     null);
 
         } catch (Exception e) {
-
             long endTime = System.currentTimeMillis();
 
+            int status = 500;
+            if (e instanceof WebClientResponseException wcre) {
+                status = wcre.getStatusCode().value(); // extracts the real 404, 403, 401 etc.
+            }
+
             return new ApiResponse(
-                    500,
+                    status,
                     (endTime - startTime),
                     false,
                     e.getMessage());
