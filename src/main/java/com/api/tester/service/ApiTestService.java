@@ -45,7 +45,8 @@ public class ApiTestService {
             return new ApiResponse(
                     response.getStatusCode().value(),
                     (endTime - startTime),
-                    true,
+                    response.getStatusCode()
+                            .is2xxSuccessful(),
                     null);
 
         } catch (Exception e) {
@@ -203,7 +204,8 @@ public class ApiTestService {
             return new ApiResponse(
                     response.getStatusCode().value(),
                     (endTime - startTime),
-                    true,
+                    response.getStatusCode()
+                            .is2xxSuccessful(),
                     null);
 
         } catch (Exception e) {
