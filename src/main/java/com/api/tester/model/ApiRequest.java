@@ -9,6 +9,8 @@ public class ApiRequest {
     private Map<String, String> headers;
     private Map<String, Object> body;
     
+    public ApiRequest() {
+    }
     public ApiRequest(String url, String method, Map<String, String> headers, Map<String, Object>body) {
         this.url = url;
         this.method = method;

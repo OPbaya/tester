@@ -8,20 +8,30 @@ import com.api.tester.model.TestResult;
 import com.api.tester.service.ApiTestService;
 import com.api.tester.service.HistoryService;
 
+import jakarta.annotation.PostConstruct;
+
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.*;
 
 // @CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api")
 public class TestController {
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @PostConstruct
+    public void checkDb() {
+        System.out.println("DB Name: " + mongoTemplate.getDb().getName());
+    }
 
     private final ApiTestService apiTestService;
 
     private final HistoryService historyService;
-
 
     public TestController(ApiTestService apiTestService, HistoryService historyService) {
         this.apiTestService = apiTestService;

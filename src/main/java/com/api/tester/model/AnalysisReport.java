@@ -9,6 +9,8 @@ public class AnalysisReport {
     private String overallStatus;
     private String summary;
 
+    public AnalysisReport() {
+    }
     public AnalysisReport(List<TestResult> results, String overallStatus, String summary, List<String> suggestions) {
         this.results = results;
         this.overallStatus = overallStatus;

@@ -7,6 +7,8 @@ public class ApiResponse {
     private boolean success;
     private String error;
 
+    public ApiResponse() {
+    }
     public ApiResponse(int status, long responseTime, boolean success, String error) {
         this.status = status;
         this.responseTime = responseTime;
