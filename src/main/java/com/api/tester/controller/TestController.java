@@ -6,6 +6,7 @@ import com.api.tester.model.ApiRequest;
 import com.api.tester.model.ApiResponse;
 import com.api.tester.model.TestResult;
 import com.api.tester.service.ApiTestService;
+import com.api.tester.service.HistoryService;
 
 import java.util.List;
 import java.util.Map;
@@ -19,8 +20,12 @@ public class TestController {
 
     private final ApiTestService apiTestService;
 
-    public TestController(ApiTestService apiTestService) {
+    private final HistoryService historyService;
+
+
+    public TestController(ApiTestService apiTestService, HistoryService historyService) {
         this.apiTestService = apiTestService;
+        this.historyService = historyService;
     }
 
     @PostMapping("/test")
@@ -38,7 +43,7 @@ public class TestController {
     // http://localhost:8080/api/analyze?url=https://jsonplaceholder.typicode.com/posts
     // @GetMapping("/analyze")
     // public List<TestResult> testMultiple(@RequestParam String url) {
-    //     return apiTestService.runMultipleTests(url);
+    // return apiTestService.runMultipleTests(url);
     // }
 
     // GET
@@ -50,11 +55,14 @@ public class TestController {
 
     // @PostMapping("/full-analysis")
     // public AnalysisReport fullAnalysis(@RequestBody ApiRequest request) {
-    //     return apiTestService.analyzeFullApi(request);
+    // return apiTestService.analyzeFullApi(request);
     // }
-    
+
     @PostMapping("/full-analysis")
     public AnalysisReport fullAnalysis(@RequestBody ApiRequest request) {
-        return apiTestService.analyzeFullApi(request);
+        AnalysisReport report = apiTestService.analyzeFullApi(request);
+        // return apiTestService.analyzeFullApi(request);
+        historyService.saveHistory(request, report); // auto save to MongoDB
+        return report;
     }
 }

@@ -9,6 +9,10 @@ public class TestResult {
     private String err;
     private long responseTime;
     
+    // No-arg constructor for MongoDB
+    public TestResult() {
+    }
+
     public TestResult(String testName, int status, boolean success, String issue, String error, long responseTime) {
         this.testName = testName;
         this.status = status;

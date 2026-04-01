@@ -5,6 +5,8 @@ public class TestCase {
     private String name;
     private String type;
 
+    public TestCase() {
+    }
     public TestCase(String name, String type) {
         this.name = name;
         this.type = type;
