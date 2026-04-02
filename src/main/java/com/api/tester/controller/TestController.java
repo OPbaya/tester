@@ -30,7 +30,6 @@ public class TestController {
     }
 
     private final ApiTestService apiTestService;
-
     private final HistoryService historyService;
 
     public TestController(ApiTestService apiTestService, HistoryService historyService) {
