@@ -6,12 +6,13 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @Configuration
 @EnableMongoRepositories(basePackages = "com.api.tester.repository")
-public class MongoConfig extends AbstractMongoClientConfiguration {
+// due to "extends AbstractMongoClientConfiguration" it was unable to connect to the atlas(was conecting to compass), so I removed it and it works fine without it
+public class MongoConfig  {
 
-    @Override
-    protected String getDatabaseName() {
-        return "api_tester_db";
-    }
+    // @Override
+    // protected String getDatabaseName() {
+    //     return "api_tester_db";
+    // }
 }
 
 // ```
