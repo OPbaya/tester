@@ -8,6 +8,7 @@ public class LoadTestResult {
     private boolean success;
     private String error;
 
+    // No-arg constructor required for MongoDB deserialization of nested documents
     public LoadTestResult() {
     }
 
