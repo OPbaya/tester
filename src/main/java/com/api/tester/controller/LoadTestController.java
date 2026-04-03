@@ -8,6 +8,7 @@ import com.api.tester.service.LoadTestService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -60,12 +61,27 @@ public class LoadTestController {
                 request.getRequestCount(),
                 request.getMode(),
                 LocalDateTime.now(), // timestamp of when the test was run
-                report
-            );
+                report);
 
         // Actually save it to the "load_test_history" collection in MongoDB
         loadTestHistoryRepository.save(history);
 
         return ResponseEntity.ok(report);
+    }
+
+    // Get all load test history — latest first
+    @GetMapping("/load-test/history")
+    public ResponseEntity<List<LoadTestHistory>> getAllHistory() {
+        // Fetch all entries from MongoDB ordered by date
+        List<LoadTestHistory> history = loadTestHistoryRepository.findAllByOrderByTestedAtDesc();
+        return ResponseEntity.ok(history);
+    }
+
+    // Delete a load test history entry by ID
+    @DeleteMapping("/load-test/history/{id}")
+    public ResponseEntity<String> deleteHistory(@PathVariable String id) {
+        // Delete the entry from MongoDB
+        loadTestHistoryRepository.deleteById(id);
+        return ResponseEntity.ok("Load test history entry deleted");
     }
 }
