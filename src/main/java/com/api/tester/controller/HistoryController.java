@@ -28,7 +28,7 @@ public class HistoryController {
         return historyService.getAllHistory();
     }
 
-    // Get history by URL
+    // Get history by URL   
     @GetMapping("/search")
     public List<HistoryEntry> getHistoryByUrl(@RequestParam String url) {
         return historyService.getHistoryByUrl(url);
