@@ -10,12 +10,9 @@ import com.api.tester.model.ApiResponse;
 import com.api.tester.model.TestResult;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
+
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 
 @Service
 public class ApiTestService {
